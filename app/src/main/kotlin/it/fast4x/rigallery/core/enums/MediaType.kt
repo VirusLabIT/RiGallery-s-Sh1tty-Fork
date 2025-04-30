@@ -12,14 +12,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 enum class MediaType {
     Images,
     Video,
-    Audios,
+    //Audios,
     All;
 
     val title: String
         get() = when(this) {
             Images -> "Images"
             Video -> "Video"
-            Audios -> "Audios"
+            //Audios -> "Audios"
             All -> "All"
         }
 
@@ -27,7 +27,7 @@ enum class MediaType {
         get() = when (this) {
             Images -> Icons.Filled.Image
             Video -> Icons.Filled.VideoFile
-            Audios -> Icons.Filled.AudioFile
+            //Audios -> Icons.Filled.AudioFile
             All -> Icons.Filled.DoneAll
         }
 

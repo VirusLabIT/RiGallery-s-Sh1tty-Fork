@@ -1,6 +1,8 @@
 /*
  * SPDX-FileCopyrightText: 2023 IacobIacob01
  * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: 2025 Fast4x
+ * SPDX-License-Identifier: GPL-3.0 license
  */
 
 package it.fast4x.rigallery.feature_node.presentation.common
@@ -11,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.fast4x.rigallery.core.Constants
@@ -33,6 +36,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import it.fast4x.rigallery.core.Settings.Misc.TIMELINE_GROUP_BY_MONTH
 import it.fast4x.rigallery.core.enums.MediaType
 import it.fast4x.rigallery.feature_node.domain.util.isAudio
+import it.fast4x.rigallery.feature_node.domain.util.isFavorite
 import it.fast4x.rigallery.feature_node.domain.util.isImage
 import it.fast4x.rigallery.feature_node.domain.util.isVideo
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +50,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import javax.inject.Inject
@@ -150,7 +155,7 @@ open class MediaViewModel @Inject constructor(
                 removeAll { media -> media.id == ignoredMediaList.find { it.id == media.id }?.id }
                 if (mediaType == MediaType.Video.ordinal) removeAll { media -> media.isImage || media.isAudio }
                 if (mediaType == MediaType.Images.ordinal) removeAll { media -> media.isVideo || media.isAudio }
-                if (mediaType == MediaType.Audios.ordinal) removeAll { media -> media.isVideo || media.isImage }
+                //if (mediaType == MediaType.Audios.ordinal) removeAll { media -> media.isVideo || media.isImage }
             }
 
             updateDatabase()
@@ -308,11 +313,26 @@ open class MediaViewModel @Inject constructor(
     }
 
     private suspend fun <T : Media> List<T>.parseQuery(query: String): List<T> {
-        return withContext(Dispatchers.IO) {
-            if (query.isEmpty())
-                return@withContext emptyList()
-            val matches = FuzzySearch.extractSorted(query, this@parseQuery, { it.toString() }, 60)
-            return@withContext matches.map { it.referent }.ifEmpty { emptyList() }
+        val tag = if (query.startsWith("#")) query.substringAfter("#").lowercase() else ""
+        println("MediaViewModel pre tag: $tag query: $query")
+        if (tag.isEmpty()) {
+            return withContext(Dispatchers.IO) {
+                if (query.isEmpty())
+                    return@withContext emptyList()
+                val matches =
+                    FuzzySearch.extractSorted(query, this@parseQuery, { it.toString() }, 60)
+                return@withContext matches.map { it.referent }.ifEmpty { emptyList() }
+            }
+        } else {
+            println("MediaViewModel tag: $tag")
+            return runBlocking {
+                return@runBlocking this@parseQuery
+                    .filter {
+                        (it.isImage && tag == "image") ||
+                        (it.isVideo && tag == "video") ||
+                        (it.isFavorite && tag == "favorite")
+                    }
+            }
         }
     }
 
