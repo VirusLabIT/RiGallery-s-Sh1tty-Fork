@@ -58,6 +58,7 @@ import it.fast4x.rigallery.core.enums.MediaType2
 import it.fast4x.rigallery.core.enums.Option
 import it.fast4x.rigallery.core.presentation.components.EmptyMedia
 import it.fast4x.rigallery.core.presentation.components.NavigationActions
+import it.fast4x.rigallery.core.presentation.components.NavigationButton
 import it.fast4x.rigallery.core.presentation.components.OptionSheetMenu
 import it.fast4x.rigallery.core.presentation.components.SelectionSheet
 import it.fast4x.rigallery.feature_node.domain.model.AlbumState
@@ -199,7 +200,6 @@ fun <T: Media> MediaScreen(
                             .padding(vertical = 10.dp)
                             .fillMaxWidth()
                     ) {
-                        if (!isMusic){
                         Text(
                             text = MediaType.entries[showMediaType].title,
                             style = MaterialTheme.typography.titleMedium,
@@ -210,19 +210,7 @@ fun <T: Media> MediaScreen(
                                     showMediaTypeMenu = true
                                 }
                                 .padding(5.dp)
-                        )}
-                        if (isMusic){
-                            Text(
-                                text = MediaType2.entries[showMediaType].title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .clickable{
-                                        showMediaTypeMenu = true
-                                    }
-                                    .padding(5.dp)
-                            )}
+                        )
 //                        IconButton(onClick = { showMediaTypeMenu = true }) {
 //                            Icon(
 //                                imageVector = MediaType.entries[showMediaType].icon,
@@ -279,7 +267,6 @@ fun <T: Media> MediaScreen(
                     }
 
                 }
-            if (!isMusic){
             OptionSheetMenu(
                 title = "Media type",
                 options = MediaType.entries.map{ option ->
@@ -293,23 +280,7 @@ fun <T: Media> MediaScreen(
                 visible = showMediaTypeMenu,
                 onSelected = { showMediaType = it },
                 onDismiss = { showMediaTypeMenu = false }
-            )}
-            else{
-                OptionSheetMenu(
-                    title = "Media type",
-                    options = MediaType2.entries.map{ option ->
-                        Option(
-                            ordinal = option.ordinal,
-                            name = option.name,
-                            title = option.title,
-                            icon = option.icon
-                        )
-                    },
-                    visible = showMediaTypeMenu,
-                    onSelected = { showMediaType = it },
-                    onDismiss = { showMediaTypeMenu = false }
-                )
-            }
+            )
         }
         if (target != TARGET_TRASH) {
             SelectionSheet(
